@@ -8,8 +8,8 @@ On TrustZone targets, you need to partition the hardware first for secure progra
 
 The pre-built secure program will set up the following hardware partition:
 
-- Flash (512KiB in total): 64KiB for secure and 448KiB for nonsecure.
-- SRAM (96KiB in total): 8KiB for secure and 88KiB for nonsecure.
+- Flash (1024KiB in total): 384KiB for secure and 640KiB for nonsecure.
+- SRAM (256KiB in total): 96KiB for secure and 160KiB for nonsecure.
 - Peripherals: Most are configured to nonsecure except the following, which are hardwired or reserved:
     - **SYS/CLK** hardwired to secure. Accessible to nonsecure through a secure gateway.
     - **FMC** hardwired to secure. Accessible to nonsecure through a secure gateway.
