@@ -115,7 +115,7 @@ public:
      * \return DEVICEKEY_GENERATE_RANDOM_ERROR if this device does not contain entropy sources and cannot generate a key.
      * \return error codes on other failures.
      */
-    int generate_root_of_trust();
+    int generate_root_of_trust(size_t key_size = DEVICE_KEY_16BYTE);
 
 private:
     // Private constructor, as class is a singleton

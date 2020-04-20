@@ -245,11 +245,15 @@ finish:
     return DEVICEKEY_SUCCESS;
 }
 
-int DeviceKey::generate_root_of_trust()
+int DeviceKey::generate_root_of_trust(size_t key_size)
 {
+    if (key_size != DEVICE_KEY_32BYTE && key_size != DEVICE_KEY_16BYTE) {
+        return DEVICEKEY_INVALID_KEY_SIZE;
+    }
+    
     int ret = DEVICEKEY_GENERATE_RANDOM_ERROR;
     uint32_t key_buff[DEVICE_KEY_32BYTE / sizeof(uint32_t)];
-    size_t actual_size = DEVICE_KEY_32BYTE;
+    size_t actual_size = key_size;
 
     if (read_key_from_kvstore(key_buff, actual_size) == DEVICEKEY_SUCCESS) {
         return DEVICEKEY_ALREADY_EXIST;
