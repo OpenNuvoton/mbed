@@ -40,10 +40,13 @@ LR_IROM1 MBED_APP_START {
   
   RW_IRAM1 AlignExpr(+0, 16) {  ; 16 byte-aligned
    .ANY (+RW +ZI)
+  } 
+  ARM_LIB_HEAP AlignExpr(+0, 16) EMPTY (0x20000000 + 0x28000 - 0x6000 - AlignExpr(ImageLimit(RW_IRAM1), 16)) {
   }
-  
-  ARM_LIB_HEAP AlignExpr(+0, 16) EMPTY (0x20000000 + 0x28000 - AlignExpr(ImageLimit(RW_IRAM1), 16)) {
+  NU_EMAC_RAM AlignExpr(+0, 16) (0x6000) {  ; Reserve for EMAC TX/RX
+    .ANY (EMAC_RAM)
   }
 }
 ScatterAssert(LoadLimit(LR_IROM1) <= (MBED_APP_START + MBED_APP_SIZE))  ; 512 KB APROM
 ScatterAssert(ImageLimit(ARM_LIB_HEAP) <= 0x20028000)   ; 160 KB SRAM
+ScatterAssert(ImageLimit(NU_EMAC_RAM) <= 0x20028000)   ; 160 KB SRAM
