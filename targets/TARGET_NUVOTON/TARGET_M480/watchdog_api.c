@@ -24,7 +24,7 @@
 #define NU_US_PER_SEC               1000000
 
 /* Watchdog clock per second */
-#define NU_WDTCLK_PER_SEC           (__LIRC)
+#define NU_WDTCLK_PER_SEC           (__LXT)//(__LIRC)
 
 /* Convert watchdog clock to nearest ms */
 #define NU_WDTCLK2MS(WDTCLK)        (((WDTCLK) * 1000 + ((NU_WDTCLK_PER_SEC) / 2)) / (NU_WDTCLK_PER_SEC))
@@ -71,7 +71,7 @@ watchdog_status_t hal_watchdog_init(const watchdog_config_t *config)
 
     wdt_timeout_reload_ms = config->timeout_ms;
     wdt_timeout_rmn_clk = NU_MS2WDTCLK(wdt_timeout_reload_ms);
-    
+
     if (! wdt_hw_inited) {
         wdt_hw_inited = 1;
 
@@ -79,7 +79,9 @@ watchdog_status_t hal_watchdog_init(const watchdog_config_t *config)
         CLK_EnableModuleClock(WDT_MODULE);
 
         /* Select IP clock source */
-        CLK_SetModuleClock(WDT_MODULE, CLK_CLKSEL1_WDTSEL_LIRC, 0);
+        SYS_UnlockReg();
+        CLK_SetModuleClock(WDT_MODULE, CLK_CLKSEL1_WDTSEL_LXT, 0);
+        SYS_LockReg();
 
         /* Set up IP interrupt */
         NVIC_SetVector(WDT_IRQn, (uint32_t) WDT_IRQHandler);
@@ -102,7 +104,7 @@ watchdog_status_t hal_watchdog_stop(void)
     SYS_UnlockReg();
 
     /* Clear all flags & Disable interrupt & Disable WDT */
-    WDT->CTL = (WDT->CTL & ~(WDT_CTL_WDTEN_Msk | WDT_CTL_INTEN_Msk)) | (WDT_CTL_WKF_Msk | WDT_CTL_IF_Msk | WDT_CTL_RSTF_Msk);        
+    WDT->CTL = (WDT->CTL & ~(WDT_CTL_WDTEN_Msk | WDT_CTL_INTEN_Msk)) | (WDT_CTL_WKF_Msk | WDT_CTL_IF_Msk | WDT_CTL_RSTF_Msk);
 
     SYS_LockReg();
 
@@ -160,12 +162,12 @@ static void watchdog_setup_cascade_timeout(void)
         wdt_timeout_rmn_clk = 0;
         wdt_timeout_clk_toutsel = WDT_TIMEOUT_2POW4;
     } else {
-        /* WDT has timed-out and will restart system soon. We just disable interrupt to escape 
+        /* WDT has timed-out and will restart system soon. We just disable interrupt to escape
          * getting stuck in WDT ISR. */
         SYS_UnlockReg();
 
         /* Clear all flags & Disable interrupt */
-        WDT->CTL = (WDT->CTL & ~WDT_CTL_INTEN_Msk) | (WDT_CTL_WKF_Msk | WDT_CTL_IF_Msk | WDT_CTL_RSTF_Msk);        
+        WDT->CTL = (WDT->CTL & ~WDT_CTL_INTEN_Msk) | (WDT_CTL_WKF_Msk | WDT_CTL_IF_Msk | WDT_CTL_RSTF_Msk);
 
         SYS_LockReg();
         return;
@@ -174,18 +176,18 @@ static void watchdog_setup_cascade_timeout(void)
     SYS_UnlockReg();
 
     /* Configure reset delay on timeout */
-    WDT->ALTCTL = NU_WDT_RESET_DELAY_RSTDSEL;               
+    WDT->ALTCTL = NU_WDT_RESET_DELAY_RSTDSEL;
 
     /* Configure another piece of cascaded WDT timeout */
     WDT->CTL = wdt_timeout_clk_toutsel |                    // Timeout interval
-        WDT_CTL_WDTEN_Msk |                                 // Enable watchdog timer
-        WDT_CTL_INTEN_Msk |                                 // Enable interrupt
-        WDT_CTL_WKF_Msk |                                   // Clear wake-up flag
-        WDT_CTL_WKEN_Msk |                                  // Enable wake-up on timeout
-        WDT_CTL_IF_Msk |                                    // Clear interrupt flag
-        WDT_CTL_RSTF_Msk |                                  // Clear reset flag
-        (wdt_timeout_rmn_clk ? 0 : WDT_CTL_RSTEN_Msk) |     // Enable reset on last cascaded timeout
-        WDT_CTL_RSTCNT_Msk;                                 // Reset watchdog timer
+               WDT_CTL_WDTEN_Msk |                                 // Enable watchdog timer
+               WDT_CTL_INTEN_Msk |                                 // Enable interrupt
+               WDT_CTL_WKF_Msk |                                   // Clear wake-up flag
+               WDT_CTL_WKEN_Msk |                                  // Enable wake-up on timeout
+               WDT_CTL_IF_Msk |                                    // Clear interrupt flag
+               WDT_CTL_RSTF_Msk |                                  // Clear reset flag
+               WDT_CTL_RSTEN_Msk |                                 // Enable reset
+               WDT_CTL_RSTCNT_Msk;                                 // Reset watchdog timer
 
     SYS_LockReg();
 }
