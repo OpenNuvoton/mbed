@@ -125,6 +125,9 @@ typedef enum {
     /* No SPI4/5 H/W, degrade QSPI0/1 H/W to SPI_4/5 for standard SPI usage */
     SPI_4 = (int) NU_MODNAME(QSPI0_BASE, 4, 0),
     SPI_5 = (int) NU_MODNAME(QSPI1_BASE, 5, 0),
+    
+    /* No SPI6 H/W, degrade SPIM H/W to SPI_6 for standard SPI usage */
+    SPI_6 = (int) NU_MODNAME(SPIM_BASE, 6, 0),
 } SPIName;
 
 typedef enum {
